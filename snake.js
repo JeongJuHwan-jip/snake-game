@@ -11,9 +11,18 @@ class Snake {
     }
 
     move() {
+        var nx = this.tail[this.tail.length-1].x + this.size * this.dx[this.dir]
+        var ny = this.tail[this.tail.length-1].y + this.size * this.dy[this.dir]
+
+        for(var i=0; i<snake.tail.length-1; i++) {
+            if(nx == snake.tail[i].x && ny == snake.tail[i].y) {
+                isPlaying = false;
+            }
+        }
+
         var newRect = {
-            x: this.tail[this.tail.length-1].x + this.size * this.dx[this.dir],
-            y: this.tail[this.tail.length-1].y + this.size * this.dy[this.dir]
+            x: nx,
+            y: ny
         }
 
         this.tail.shift()
@@ -50,6 +59,8 @@ var apple = new Apple();
 
 var canvasContext = canvas.getContext('2d');
 
+var isPlaying = true;
+
 window.onload = ()=>{
     gameLoop();
 }
@@ -59,8 +70,12 @@ function gameLoop() {
 }
 
 function show() {
-    update();
-    draw();
+    if(isPlaying) {
+        update();
+        draw();
+    } else {
+        gameover();
+    }
 }
 
 function update() {
@@ -74,13 +89,13 @@ function update() {
 function checkHitWall() {
     var headTail = snake.tail.at(-1)
     if(headTail.x == -snake.size) {
-        headTail.x = canvas.width - snake.size
+        isPlaying = false;
     } else if(headTail.x == canvas.width) {
-        headTail.x = 0
+        isPlaying = false;
     } else if(headTail.y == -snake.size) {
-        headTail.y = canvas.height - snake.size
+        isPlaying = false;
     } else if(headTail.y == canvas.height) {
-        headTail.y = 0
+        isPlaying = false;
     }
 }
 
@@ -93,11 +108,12 @@ function eatApple() {
 
 function draw() {
     createRect(0, 0, canvas.width, canvas.height, "black")
-    createRect(0, 0, canvas.width, canvas.height)
-    for(var i=0; i<snake.tail.length; i++) {
+    for(var i=0; i<snake.tail.length-1; i++) {
         createRect(snake.tail[i].x + 2.5, snake.tail[i].y + 2.5,
             snake.size - 5, snake.size - 5, 'white')
     }
+    createRect(snake.tail.at(-1).x + 2.5, snake.tail.at(-1).y + 2.5,
+        snake.size - 5, snake.size - 5, 'yellow')
 
     canvasContext.font = "20px Arial"
     canvasContext.fillStyle = "#00FF42"
@@ -123,3 +139,10 @@ window.addEventListener("keydown", (event)=>{
         }
     }, 1)
 })
+
+function gameover() {
+    createRect(0, 0, canvas.width, canvas.height, "black")
+    canvasContext.font = "20px Arial"
+    canvasContext.fillStyle = "#00FF42"
+    canvasContext.fillText("Score: "+(snake.tail.length-1)+"  Game Over", 100, 200);
+}
