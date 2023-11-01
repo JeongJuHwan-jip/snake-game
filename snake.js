@@ -8,6 +8,7 @@ class Snake {
         this.size = size
         this.tail = [{x:this.x, y:this.y}]
         this.dir = 1
+        this.dirchanged = false;
     }
 
     move() {
@@ -27,6 +28,7 @@ class Snake {
 
         this.tail.shift()
         this.tail.push(newRect)
+        this.dirchanged = false;
     }
 }
 
@@ -52,21 +54,22 @@ class Apple {
 }
 
 var canvas = document.getElementById("canvas");
-
-var snake = new Snake(20, 20, 20);
-
-var apple = new Apple();
-
 var canvasContext = canvas.getContext('2d');
-
-var isPlaying = true;
+var snake;
+var apple;
+var isPlaying = false;
 
 window.onload = ()=>{
     gameLoop();
 }
 
+let interval;
 function gameLoop() {
-    setInterval(show, 1000/15)
+    if(isPlaying) clearInterval(interval);
+    isPlaying = true;
+    snake = new Snake(20, 20, 20);
+    apple = new Apple();
+    interval = setInterval(show, 1000/15);
 }
 
 function show() {
@@ -74,6 +77,7 @@ function show() {
         update();
         draw();
     } else {
+        clearInterval(interval);
         gameover();
     }
 }
@@ -128,14 +132,21 @@ function createRect(x, y, width, height, color) {
 
 window.addEventListener("keydown", (event)=>{
     setTimeout(()=>{
-        if(event.keyCode == 37 && snake.dir != 0) {
+        if(snake.dirchanged == false && event.keyCode == 37 && snake.dir != 0) {
+            snake.dirchanged = true;
             snake.dir = 2;
-        } else if(event.keyCode == 38 && snake.dir != 1) {
+        } else if(snake.dirchanged == false && event.keyCode == 38 && snake.dir != 1) {
+            snake.dirchanged = true;
             snake.dir = 3;
-        } else if(event.keyCode == 39 && snake.dir != 2) {
+        } else if(snake.dirchanged == false && event.keyCode == 39 && snake.dir != 2) {
+            snake.dirchanged = true;
             snake.dir = 0;
-        } else if(event.keyCode == 40 && snake.dir != 3) {
+        } else if(snake.dirchanged == false && event.keyCode == 40 && snake.dir != 3) {
+            snake.dirchanged = true;
             snake.dir = 1;
+        } else if(event.keyCode == 82 || event.keyCode == 114)
+        {
+            gameLoop();
         }
     }, 1)
 })
@@ -144,5 +155,7 @@ function gameover() {
     createRect(0, 0, canvas.width, canvas.height, "black")
     canvasContext.font = "20px Arial"
     canvasContext.fillStyle = "#00FF42"
-    canvasContext.fillText("Score: "+(snake.tail.length-1)+"  Game Over", 100, 200);
+    canvasContext.textAlign = 'center'
+    canvasContext.fillText("Score: "+(snake.tail.length-1)+"  Game Over", canvas.width/2, canvas.height/2);
+    canvasContext.fillText("press R to restart", canvas.width/2, canvas.height/2 + 100);
 }
